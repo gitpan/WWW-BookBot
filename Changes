@@ -1,0 +1,8 @@
+Revision history for Perl extension WWW::BookBot.
+
+0.10    2003.06.29 16:10  Qing-Jie Zhou
+    * First release
+
+0.01    2003.05.26 16:50
+	- original version; created by h2xs 1.22 with options
+		-X -n WWW::BookBot
