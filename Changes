@@ -1,6 +1,10 @@
 Revision history for Perl extension WWW::BookBot.
 
-0.11
+0.12    2003.06.30 21:48  Qing-Jie Zhou
+    * Reformat all files except *.bat from DOS format into Unix format
+    * Correct version in README
+
+0.11    2003.06.30 21:41  Qing-Jie Zhou
 	* Modify bin/bookbot to support empty argv
 	* Modify BookBot.pm to support empty $pargs
 	* Modify BookBot.pm to test next page without content_head/end limitation

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = "0.11";
+$VERSION = "0.12";
 @EXPORT = qw();
 @EXPORT_OK = @EXPORT;
  

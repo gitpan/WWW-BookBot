@@ -5,7 +5,7 @@ use strict;
 use warnings;
 no warnings qw(uninitialized);
 use base qw(WWW::BookBot::Chinese);
-our $VERSION='1.01';
+our $VERSION='1.02';
 our $mag_name='';
 our $has_catalog=0;
 our $key_valid='';

@@ -5,7 +5,7 @@ use strict;
 use warnings;
 no warnings qw(uninitialized);
 use base qw(WWW::BookBot::Chinese);
-our $VERSION='1.01';
+our $VERSION='1.02';
 
 sub default_settings {
 	my $self = shift->SUPER::default_settings;

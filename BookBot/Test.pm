@@ -4,7 +4,7 @@ use warnings;
 no warnings qw(uninitialized utf8);
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = "0.10";
+$VERSION = "0.12";
 @EXPORT = qw(
 	new_bot read_file
 	dump_class dump_var en_code de_code parse_patterns test_pattern

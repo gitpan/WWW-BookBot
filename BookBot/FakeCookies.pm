@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use base qw(HTTP::Cookies);
 use vars qw($VERSION);
-$VERSION = '1.00';
+$VERSION = '1.02';
 
 sub add_cookie_header {
 	my $self = shift;

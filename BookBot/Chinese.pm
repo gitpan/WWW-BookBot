@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 use base qw(WWW::BookBot);
 use vars qw($VERSION);
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 #-------------------------------------------------------------
 # Default settings
