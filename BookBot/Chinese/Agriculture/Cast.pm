@@ -5,9 +5,7 @@ use strict;
 use warnings;
 no warnings qw(uninitialized);
 use base qw(WWW::BookBot::Chinese);
-our $VERSION='1.00';
-
-use HTTP::Date;
+our $VERSION='1.01';
 
 sub default_settings {
 	my $self = shift->SUPER::default_settings;
@@ -24,7 +22,7 @@ sub msg_init {
 	$msg->{CatalogInfo}='==>科技要闻第$pargs->{pageno}页：';
 }
 
-sub alias {
+sub get_alias {
 	'agr_cast';
 }
 sub argv_default {
@@ -77,7 +75,7 @@ DATA
 sub result_time {
 	my ($self, $pargs) = @_;
 	if($pargs->{date}=~/^(\d+)年(\d+)月(\d+)日$/) {
-		return str2time("$1-$2-$3");
+		return $self->string2time("$1-$2-$3");
 	}else{
 		return $pargs->{last_modified};
 	}

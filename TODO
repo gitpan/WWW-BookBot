@@ -153,3 +153,5 @@ sub parse_innerspace {
 
 	return $str;
 }
+
+WWW::BookBot is a bot to fetch web e-texts with catalog, books and chapters. It can fetch and reformat multiple html pages into a single text file, which can be readed in .

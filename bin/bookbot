@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-$VERSION = '0.10';
+our $VERSION = '0.11';
 
 use Getopt::Long qw(:config pass_through);
 use WWW::BookBot::Alias;
@@ -64,7 +64,7 @@ croak "fail to load $class" if $@;
 my $bot=$class->new($pargsbot);
 my $pargsget={};
 my @argv_default=$bot->argv_default();
-GetOptions($pargsget, @argv_default);
+GetOptions($pargsget, @argv_default) if scalar(@argv_default)>0;
 
 # process all or not
 if($ARGV[0] eq 'all') {
@@ -73,12 +73,10 @@ if($ARGV[0] eq 'all') {
 }
 
 # direct argv
-if(scalar(%$pargsget)==0) {
-	foreach (@argv_default) {
-		last if scalar(@ARGV)==0;
-		my ($var)=split(/=/);
-		$pargsget->{$var}=shift(@ARGV);
-	}
+foreach (@argv_default) {
+	last if scalar(@ARGV)==0;
+	my ($var)=split(/=/);
+	$pargsget->{$var}=shift(@ARGV);
 }
 
 # process all or not

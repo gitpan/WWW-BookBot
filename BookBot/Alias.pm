@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = "1.00";
+$VERSION = "1.01";
 @EXPORT = qw(
 	alias2class
 );
@@ -20,9 +20,12 @@ sub alias2class {
 
 %aliases=(
 #Alias Begin
-agr_cast	=> 'WWW::BookBot::Chinese::Agriculture::Cast',
-dragonsky	=> 'WWW::BookBot::Chinese::Novel::DragonSky',
-shuku		=> 'WWW::BookBot::Chinese::Novel::ShuKu',
+agr_cast				=> 'WWW::BookBot::Chinese::Agriculture::Cast',
+agr_cngreen_market		=> 'WWW::BookBot::Chinese::Agriculture::GreenHouse::Market',
+agr_cngreen_tech		=> 'WWW::BookBot::Chinese::Agriculture::GreenHouse::Tech',
+dragonsky				=> 'WWW::BookBot::Chinese::Novel::DragonSky',
+shuku					=> 'WWW::BookBot::Chinese::Novel::ShuKu',
+wanfang					=> 'WWW::BookBot::Chinese::Periodical::WanFang',
 #Alias End
 );
 

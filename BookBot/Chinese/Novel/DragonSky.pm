@@ -5,7 +5,7 @@ use strict;
 use warnings;
 no warnings qw(uninitialized);
 use base qw(WWW::BookBot::Chinese);
-our $VERSION='1.00';
+our $VERSION='1.01';
 
 sub default_settings {
 	my $self = shift->SUPER::default_settings;
@@ -20,7 +20,7 @@ sub msg_init {
 	$msg->{CatalogInfo}='==>$pargs->{cat}£º';
 }
 
-sub alias {
+sub get_alias {
 	'dragonsky';
 }
 sub argv_default {

@@ -6,7 +6,7 @@ use warnings;
 no warnings qw(uninitialized);
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = "0.10";
+$VERSION = "0.11";
 @EXPORT = qw();
 @EXPORT_OK = @EXPORT;
  
@@ -120,7 +120,7 @@ sub initialize {
 	$self->fatal_error("FailMkDir", dir=>$self->{work_dir}, errmsg=>$@) if $@;
 
 	# Check debug directory
-	$self->{get_file_directory_save}=catfile($self->{get_file_directory}, $self->alias());
+	$self->{get_file_directory_save}=catfile($self->{get_file_directory}, $self->get_alias());
 	$self->{get_file_directory_read}=$self->{get_file_directory_save};
 	$self->{get_file_directory_read}=~s,\\,/,sg;
 	$self->{get_file_directory_read}=~s,/+$,,sg;
@@ -214,6 +214,7 @@ sub test_pattern {
 #-------------------------------------------------------------
 sub parse_patterns {
 	my ($self, $str) = @_;
+	$str='' if not(defined($str));
 
 	# simplify pattern construction by add \ before /"'`$& automatically
 	$str=~s,(?=\/|\"|\'|\`|\$|\&),\\,g;
@@ -224,6 +225,9 @@ sub parse_patterns {
 		$pattern .= $_.'|' if $_ ne '';
 	}
 	$pattern=~s/\|$//;
+	
+	# parse \n
+	$pattern=~s/\\n/\n/sg;
 	
 	# decode
 	$str=$self->de_code($pattern);
@@ -424,11 +428,14 @@ sub log_add {
 #	$bot->result_add($filename, $content_en)		=> N/A
 #	$bot->result_adden($filename, $content_de)		=> N/A
 #	$bot->result_settime($filename, $curtime)		=> N/A
+#	$bot->string2time($str)							=> $time
 #-------------------------------------------------------------
 sub result_filename {
 	my ($self, $pargs) = @_;
 	my $filename=$self->result_filestem($pargs).".".$pargs->{ext_save};
+	$filename=$self->de_code($filename);
 	$filename=~s/[\\\/\:\*\?\"<>\|]//g;	# remove banned characters
+	$filename=$self->en_code($filename);
 	return catfile($self->{work_dir}, $filename);
 }
 sub result_init {
@@ -450,6 +457,9 @@ sub result_adden {
 sub result_settime {
 	my ($self, $filename, $curtime) = @_;
 	utime $curtime, $curtime, $filename;
+}
+sub string2time {
+	str2time($_[1]);
 }
 
 #-------------------------------------------------------------
@@ -524,7 +534,7 @@ sub agent_init {
 	my $self = shift;
 	my $cookies=new WWW::BookBot::FakeCookies;
 	$self->{get_agent_cur} = 0;
-	$self->{get_lasturl} = "";
+	$self->{get_lasturl} = "" if not(defined($self->{get_lasturl}));
 	$self->{get_agent_array} = [];
 	foreach ( split /;/, $self->{get_agent_proxy} ) {
 		my $ua=new LWP::UserAgent;
@@ -532,6 +542,7 @@ sub agent_init {
 		$self->agent_setproxy( $ua, $_ );
 		$ua->timeout( $self->{get_timeout} );
 		$ua->cookie_jar( $cookies );
+		push @{ $ua->requests_redirectable }, 'POST';
 		push @{$self->{get_agent_array}}, $ua;
 	}
 }
@@ -548,17 +559,17 @@ sub agent_setproxy {
 
 	# Check Win32::TieRegistry module
 	my $ie_proxy_ok=0;
-	my $win32_registry="use Win32::TieRegistry(Delimiter=>'/');";
+	my %RegHash;
+	my $win32_registry='use Win32::TieRegistry(Delimiter=>"/", TiedHash => \%RegHash);';
 	if( $^O eq 'MSWin32' ) {
 		eval $win32_registry;
 		$ie_proxy_ok=1 if not $@;
 	}
 	return "" if not $ie_proxy_ok;
-	use Win32::TieRegistry(Delimiter=>'/');
 
 	# Get IE registry
 	my($iekey, $ie_proxy_enable, $ie_proxy_server);
-	$iekey=$Registry->{"CUser/Software/Microsoft/Windows/CurrentVersion/Internet Settings/"}
+	$iekey=$RegHash{"CUser/Software/Microsoft/Windows/CurrentVersion/Internet Settings/"}
 		or return "";
 	$ie_proxy_enable=$iekey->{"/ProxyEnable"} or return "";
 	$ie_proxy_server=$iekey->{"/ProxyServer"} or return "";
@@ -868,6 +879,10 @@ sub parse_paragraph_brbr_or_brandspace {
 	$_[1]=~s/<[bB][rR]>(?=[^ <])//sg;
 	$_[1]=~s/(?:<[bB][rR]> *){1,}/\n /sg;
 }
+sub parse_paragraph_br_or_p {
+	$_[1]=~s/\n/ /sg;
+	$_[1]=~s/<[bB\/][rRpP]>/\n/sg;
+}
 sub parse_paragraph_cr {
 }
 sub parse_paragraph_crcr {
@@ -924,6 +939,7 @@ sub remove_innerspace {
 #-------------------------------------------------------------
 sub go_catalog {
 	my ($self, $pargs) = @_;
+	$pargs={} if not(ref($pargs));
 	my %args_orig=%$pargs;							#keep original args
 	$pargs->{url}=$self->msg_format('CatalogURL', $pargs);
 	$self->log_add('CatalogInfo', $pargs);
@@ -943,18 +959,20 @@ sub go_catalog {
 	my $str=$self->de_code($res->content);
 	undef $res;
 	$str=~s/\r\n|\r/\n/sg;
-	$str=~s/^.*?$self->{patterns}->{catalog_head}//os if $self->{patterns}->{catalog_head} ne '';
-	$str=~s/$self->{patterns}->{catalog_end}.*$//os if $self->{patterns}->{catalog_end} ne '';
+	my $str_all=$str;
 
 	# Parse books
+	$str=~s/^.*?$self->{patterns}->{catalog_head}//os if $self->{patterns}->{catalog_head} ne '';
+	$str=~s/$self->{patterns}->{catalog_end}.*$//os if $self->{patterns}->{catalog_end} ne '';
 	my @books=$self->catalog_get_book($pargs, $str);
+	undef $str;
 	$pargs->{book_num}=scalar(@books);
 	$self->log_add('CatalogResult'.($pargs->{book_num}>0 ? 'OK' : 'Err'), $pargs);
 	$self->db_add("catalog", $pargs->{book_num}>0 ? 'OK' : 'Err', \%args_orig);
 	
 	# Parse next area
-	my $go_next=$self->catalog_get_next($pargs, $str);
-	undef $str;
+	my $go_next=$self->catalog_get_next($pargs, $str_all);
+	undef $str_all;
 
 	# Get books
 	for(my $bpos=0; $bpos<$pargs->{book_num}; $bpos++) {
@@ -1941,7 +1959,7 @@ sub contenttype_init {
 
 #-------------------------------------------------------------
 # callback functions
-#	$bot->alias()										=> $alias
+#	$bot->get_alias()									=> $alias
 #	$bot->argv_default()								=> @argv_args
 #		qw(cat1=i cat2=i pageno=i desc=s)
 #	$bot->argv_process(\%args)							=> N/A
@@ -1972,7 +1990,7 @@ sub contenttype_init {
 #	$bot->result_time(\%args)						=> time / undef
 #		undef forbiden bot to set file time
 #-------------------------------------------------------------
-sub alias {
+sub get_alias {
 	'unknown';
 }
 sub argv_default {
